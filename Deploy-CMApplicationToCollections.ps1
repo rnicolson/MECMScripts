@@ -18,12 +18,19 @@
     Notification
 
     An example of the data in the rows is below. DO NOT include the quotes. They are just there to make it easier to see the separation for each column
-    "Collection Name"	"Application Name"	"2/22/2023 10:00"	"2/22/2025 22:30"	"Install"	"Available"	"FALSE"	"FALSE"	"LocalTime"	"TRUE"	"DisplaySoftwareCenterOnly"
+    "CollectionName"	"Application Name"	"2/22/2023 10:00"	"2/22/2025 22:30"	"Install"	"Available"	"FALSE"	"FALSE"	"LocalTime"	"TRUE"	"DisplaySoftwareCenterOnly"
 
 .PARAMETER outputFile
     Specifies the name and path for the CSV-based input file. 
     Required?                    true
     Position?                    0
+    Default value
+    Accept pipeline input?       false
+
+.PARAMETER outputFile
+    Specifies the name and path for the CSV-based input file. 
+    Required?                    true
+    Position?                    1
     Default value
     Accept pipeline input?       false
 
@@ -34,24 +41,26 @@
     New Config Manager deployments based on the parameters set in the CSV
 
 .EXAMPLE
-    powershell.exe -ExecutionPolicy ByPass -File .\Deploy-CMApplicationToCollectionsParam.ps1 -CollectionListPath "C:\Temp\CollectionsForDeployment.csv"
+    powershell.exe -ExecutionPolicy ByPass -File .\Deploy-CMApplicationToCollectionsParam.ps1 -CollectionListPath "C:\Temp\CollectionsForDeployment.csv" -LogFile "C:\Temp\Deployment.txt"
 
 
 .NOTES
     Author - Ryan Nicolson
-    Last Revised - 02/28/2023
     ChangeLog - Production version release
 
 #>
 param (
     [Parameter(Mandatory=$true)]
-    [string]$collectionListPath
+    [string]$collectionListPath,
+    [Parameter(Mandatory=$true)]
+    [string]$LogFile
 )
 #MECM Site Information
 $SiteCode = "XXX"
 $SiteServer = "server.domain.com"
 
 #############################Script##################################
+Start-Transcript -Path $LogFile
 #Connect to MECM site
 Import-Module -Name "C:\Program Files (x86)\Microsoft Configuration Manager\AdminConsole\bin\ConfigurationManager.psd1"
 if($null -eq (Get-PSDrive -Name $SiteCode -PSProvider CMSite -ErrorAction SilentlyContinue)) {
@@ -87,3 +96,4 @@ foreach ($collection in $Collections) {
     #Create the deployment
     New-CMApplicationDeployment @DeploymentParams
 }
+Stop-Transcript
